@@ -4,10 +4,10 @@ import types
 import inspect
 from functools import wraps
 import logging
-
+import getpass
 
 logger = logging.getLogger('instrumentation')
-handler = logging.FileHandler('/var/tmp/instrument.log')
+handler = logging.FileHandler('/var/tmp/instrument-{}.log'.format(getpass.getuser()))
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
