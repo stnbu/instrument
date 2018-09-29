@@ -15,15 +15,15 @@ def patch_files(paths):
     # not perfect, but perfect enough
     name_main_re = re.compile('.*if.* .*__name__.*==.*__main__')
     for path in paths:
+        wrote = False
         orig = open(path, 'r')
         with open(path+'.new', 'w') as new:
             for line in orig:
                 if name_main_re.match(line):
                     new.write(magic)
-                    new.write(line)
-                else:
-                    new.write(line)
-            else:
+                wrote = True
+                new.write(line)
+            if not wrote:
                 new.write(magic)
         orig.close()
 
