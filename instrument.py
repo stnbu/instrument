@@ -6,13 +6,22 @@ from functools import wraps
 import logging
 
 
+logger = logging.getLogger('instrumentation')
+handler = logging.FileHandler('/tmp/foo.log')
+formatter = logging.Formatter('%(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
+
+
 def instrument_function(obj):
 
     @wraps(obj)
     def wrapper(*args, **kwargs):
         result = obj(*args, **kwargs)
-        logging.error('called {function} with args {args}, {kwargs} returned {result}'.format(
-            function=obj.__name__,
+        logger.debug('called {function} from module {module} with args {args}, {kwargs} returned {result}'.format(
+            function=obj.__qualname__,
+            module=obj.__module__,
             args=args,
             kwargs=kwargs,
             result=result
@@ -24,6 +33,7 @@ def instrument_class(decorator):
     
     def decorate(cls):
         for attr in cls.__dict__: # there's propably a better way to do this
+            #import ipdb; ipdb.set_trace()
             if callable(getattr(cls, attr)):
                 setattr(cls, attr, decorator(getattr(cls, attr)))
         return cls
@@ -35,19 +45,9 @@ def instrument_this_module():
     """
     frame = inspect.stack()[1]
     module = inspect.getmodule(frame[0])
-    # this is silly, but it allows us to include __main__ (when module is executed)
-    module_name = re.sub('\.py[co]?$', '', os.path.basename(module.__file__))
     # monkeypatch the module...
     for name, obj in module.__dict__.items():
         if isinstance(obj, types.FunctionType):
             module.__dict__[name] = instrument_function(obj)
         elif isinstance(obj, type):
             instrument_class(instrument_function)(obj)
-
-
-# @instrument
-# def myfun(arg1, arg2, kwarg1=None):
-#     return id(arg1) + id(arg2) + id(kwarg1)
-# myfun(1, 2, kwarg1=3)
-
-
