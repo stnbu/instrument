@@ -20,7 +20,9 @@ def patch_files(paths):
             for line in orig:
                 if name_main_re.match(line):
                     new.write(magic)
-                new.write(line)
+                    new.write(line)
+                else:
+                    new.write(line)
             else:
                 new.write(magic)
         orig.close()
