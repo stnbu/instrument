@@ -7,7 +7,7 @@ import logging
 
 
 logger = logging.getLogger('instrumentation')
-handler = logging.FileHandler('/tmp/foo.log')
+handler = logging.FileHandler('/var/tmp/instrument.log')
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
@@ -20,12 +20,13 @@ def instrument_function(obj):
     def wrapper(*args, **kwargs):
         result = obj(*args, **kwargs)
         logger.debug('called {function} from module {module} with args {args}, {kwargs} returned {result}'.format(
-            function=obj.__qualname__,
+            function=obj.__name__,
             module=obj.__module__,
             args=args,
             kwargs=kwargs,
             result=result
         ))
+        handler.flush()
         return result
     return wrapper
 
@@ -45,6 +46,8 @@ def instrument_this_module():
     """
     frame = inspect.stack()[1]
     module = inspect.getmodule(frame[0])
+    logger.debug('instrumenting module {}'.format(module.__name__))
+    handler.flush()
     # monkeypatch the module...
     for name, obj in module.__dict__.items():
         if isinstance(obj, types.FunctionType):
