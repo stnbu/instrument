@@ -13,7 +13,7 @@ instrument.instrument_this_module()
 
 def patch_files(paths):
     # not perfect, but perfect enough
-    name_main_re = re.compile('.*if.* .*__name__.*==.*__main__')
+    name_main_re = re.compile('^if.* .*__name__.*==.*__main__')
     for path in paths:
         wrote = False
         orig = open(path, 'r')
